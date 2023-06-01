@@ -5,7 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ dd650878-ea12-11ed-26a3-8d1d59042949
-using Serialization, Lux, Random
+using Serialization, Lux, Random, HDF5
 
 # ╔═╡ b82cdc33-b5a9-4a1c-98e7-87cc87c1d673
 begin
@@ -26,22 +26,37 @@ begin
 		funcs::Array{Interpolate, 1}
 	end
 	
-	function loadData(output_file::String)
+	function loadData(output_file::String, vecs)
 		open(output_file, "r") do f
 			input_funcs = deserialize(f)
 			output = deserialize(f)
-			return [Interpolate(x[1], x[2], x[3]) for x in input_funcs], output
+			return [Interpolate(x[1], x[2], vecs) for x in input_funcs], output
+		end
+	end
+
+	function returnVecs(output_file::String)
+		open(output_file, "r") do f
+			input_funcs = deserialize(f)
+			output = deserialize(f)
+			vecs = nothing
+			for x in input_funcs
+				vecs = x[3]
+			end
+			return vecs
 		end
 	end
 end
 
+# ╔═╡ 528d96fc-59e1-4a9b-8efb-c59c10fbe4ac
+test_vecs = returnVecs("../data/data_BDA/data_100_540.jls")
+
 # ╔═╡ d42b0967-4d7c-48a3-b7bb-4fbb3ff217eb
-function load_data_tensor(file_loc)
-	input_data, output_data = loadData(file_loc)
+function load_data_tensor(file_loc, vecs)
+	input_data, output_data = loadData(file_loc, vecs)
 	
 	input_series = []
 	for itp in input_data
-		t = range(0.01f0, 1.00f0; step=0.01f0)
+		t = range(0.01f0, 0.50f0; step=0.01f0)
 		input = [itp(x) for x in t]
 		push!(input_series, hcat(input...))
 	end
@@ -52,7 +67,15 @@ function load_data_tensor(file_loc)
 	return data_vectors
 end
 
+# ╔═╡ c400ab7a-5997-4623-8aa1-f3ac1fa56b2b
+load_data_tensor("../data/data_BDA/data_100_540.jls", test_vecs)
+
+# ╔═╡ 98b8e6ed-b547-4ab0-8b87-fbbbd64b863a
+load_data_tensor("../data/data_BDA/data_100_27.jls", test_vecs)
+
 # ╔═╡ 3a50fba3-0113-41d0-841a-c692a10a5028
+# ╠═╡ disabled = true
+#=╠═╡
 begin
 	using HDF5
 
@@ -64,12 +87,38 @@ begin
 	    file["test_data"] = test_data
 	end
 end
+  ╠═╡ =#
 
-# ╔═╡ c400ab7a-5997-4623-8aa1-f3ac1fa56b2b
-load_data_tensor("../data/data_BDA/data_100_540.jls")
+# ╔═╡ 3241100e-93a9-4884-b62a-b10a6abe8850
+function interpolateVectors(vecs, beta::Float32)
+	alpha = 1.0f0 - beta
+	green = alpha*vecs[1:1, :] + beta*vecs[2:2, :]
+	purple = alpha*vecs[2:2, :] + beta*vecs[3:3, :]
+	red = alpha*vecs[3:3, :] + beta*vecs[1:1, :]
+	return vcat(zeros(Float32, 1, 100), green, purple, red)
+end
 
-# ╔═╡ 98b8e6ed-b547-4ab0-8b87-fbbbd64b863a
-load_data_tensor("../data/data_BDA/data_100_27.jls")
+# ╔═╡ 382d8b6e-2174-4edc-829b-6eae6d7addb5
+interpolateVectors(test_vecs[2:end, :], 0.0f0)
+
+# ╔═╡ 6bdb06cf-ea57-4d45-b0a3-c156d0f2b7ed
+function createInterpolateFiles(file_name, vecs, beta::Float32)
+	new_vecs = interpolateVectors(vecs[2:end, :], beta)
+	train_data = load_data_tensor("../data/data_BDA/data_100_540.jls", new_vecs)
+	test_data = load_data_tensor("../data/data_BDA/data_100_27.jls", new_vecs)
+	
+	h5open(file_name, "cw") do file
+	    file["train_data"] = train_data
+	    file["test_data"] = test_data
+	end
+end
+
+# ╔═╡ 3e0955db-8791-4129-a82a-524128040295
+begin
+	file_name = "../data/python_10_data.h5"
+	beta = 1.0f0
+	createInterpolateFiles(file_name, test_vecs, beta)
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -90,7 +139,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.4"
 manifest_format = "2.0"
-project_hash = "f37a94bbaac769aca60c1ceac3436614682ae4a7"
+project_hash = "4ff62bf1c97d1e22b068ffcc4c59921060c08d9c"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -594,9 +643,14 @@ version = "17.4.0+0"
 # ╔═╡ Cell order:
 # ╠═dd650878-ea12-11ed-26a3-8d1d59042949
 # ╠═b82cdc33-b5a9-4a1c-98e7-87cc87c1d673
+# ╠═528d96fc-59e1-4a9b-8efb-c59c10fbe4ac
 # ╠═d42b0967-4d7c-48a3-b7bb-4fbb3ff217eb
 # ╠═c400ab7a-5997-4623-8aa1-f3ac1fa56b2b
 # ╠═98b8e6ed-b547-4ab0-8b87-fbbbd64b863a
 # ╠═3a50fba3-0113-41d0-841a-c692a10a5028
+# ╠═3241100e-93a9-4884-b62a-b10a6abe8850
+# ╠═382d8b6e-2174-4edc-829b-6eae6d7addb5
+# ╠═6bdb06cf-ea57-4d45-b0a3-c156d0f2b7ed
+# ╠═3e0955db-8791-4129-a82a-524128040295
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
