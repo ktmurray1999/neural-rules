@@ -75,13 +75,12 @@ end
 
 # ╔═╡ 382d8b6e-2174-4edc-829b-6eae6d7addb5
 begin
-	test_vecs = returnVecs("../data/data_BDA/data_100_540.jls")
-	interpolateVectors(test_vecs[2:end, :], 0.0f0)
+	vecs = returnVecs("../data/data_BDA/data_100_540.jls")
+	interpolateVectors(vecs[2:end, :], 0.0f0)
 end
 
 # ╔═╡ 6bdb06cf-ea57-4d45-b0a3-c156d0f2b7ed
-function createInterpolateFiles(file_name, vecs_name, beta::Float32)
-	vecs = returnVecs(vecs_name)
+function createInterpolateFiles(vecs, file_name, vecs_name, beta::Float32)
 	new_vecs = interpolateVectors(vecs[2:end, :], beta)
 	train_data = load_data_tensor(vecs_name, new_vecs)
 	
@@ -131,7 +130,7 @@ end
 for i in betas_name
 	for j in vec_name_all
 		file_name = create_file_name(j, i)
-		createInterpolateFiles(file_name, j, i)
+		createInterpolateFiles(vecs, file_name, j, i)
 	end
 end
 
