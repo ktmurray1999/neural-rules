@@ -47,9 +47,6 @@ begin
 	end
 end
 
-# ╔═╡ 528d96fc-59e1-4a9b-8efb-c59c10fbe4ac
-test_vecs = returnVecs("../data/data_BDA/data_100_540.jls")
-
 # ╔═╡ d42b0967-4d7c-48a3-b7bb-4fbb3ff217eb
 function load_data_tensor(file_loc, vecs)
 	input_data, output_data = loadData(file_loc, vecs)
@@ -67,28 +64,6 @@ function load_data_tensor(file_loc, vecs)
 	return data_vectors
 end
 
-# ╔═╡ c400ab7a-5997-4623-8aa1-f3ac1fa56b2b
-load_data_tensor("../data/data_BDA/data_100_540.jls", test_vecs)
-
-# ╔═╡ 98b8e6ed-b547-4ab0-8b87-fbbbd64b863a
-load_data_tensor("../data/data_BDA/data_100_27.jls", test_vecs)
-
-# ╔═╡ 3a50fba3-0113-41d0-841a-c692a10a5028
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-	using HDF5
-
-	train_data = load_data_tensor("../data/data_100_540_long.jls")
-	test_data = load_data_tensor("../data/data_100_27_long.jls")
-	
-	h5open("../data/python_data_long.h5", "cw") do file
-	    file["train_data"] = train_data
-	    file["test_data"] = test_data
-	end
-end
-  ╠═╡ =#
-
 # ╔═╡ 3241100e-93a9-4884-b62a-b10a6abe8850
 function interpolateVectors(vecs, beta::Float32)
 	alpha = 1.0f0 - beta
@@ -99,25 +74,65 @@ function interpolateVectors(vecs, beta::Float32)
 end
 
 # ╔═╡ 382d8b6e-2174-4edc-829b-6eae6d7addb5
-interpolateVectors(test_vecs[2:end, :], 0.0f0)
+begin
+	test_vecs = returnVecs("../data/data_BDA/data_100_540.jls")
+	interpolateVectors(test_vecs[2:end, :], 0.0f0)
+end
 
 # ╔═╡ 6bdb06cf-ea57-4d45-b0a3-c156d0f2b7ed
-function createInterpolateFiles(file_name, vecs, beta::Float32)
+function createInterpolateFiles(file_name, vecs_name, beta::Float32)
+	vecs = returnVecs(vecs_name)
 	new_vecs = interpolateVectors(vecs[2:end, :], beta)
-	train_data = load_data_tensor("../data/data_BDA/data_100_540.jls", new_vecs)
-	test_data = load_data_tensor("../data/data_BDA/data_100_27.jls", new_vecs)
+	train_data = load_data_tensor(vecs_name, new_vecs)
 	
 	h5open(file_name, "cw") do file
 	    file["train_data"] = train_data
-	    file["test_data"] = test_data
 	end
 end
 
-# ╔═╡ 3e0955db-8791-4129-a82a-524128040295
-begin
-	file_name = "../data/python_10_data.h5"
-	beta = 1.0f0
-	createInterpolateFiles(file_name, test_vecs, beta)
+# ╔═╡ 3677317b-d746-49d7-9347-a18e3e0dc4a6
+vec_name_all = [
+	"../data/data_100_540_seed_1.jls",
+	"../data/data_100_540_seed_2.jls",
+	"../data/data_100_540_seed_3.jls",
+	"../data/data_100_540_seed_4.jls",
+	"../data/data_100_540_seed_5.jls",
+	"../data/data_100_540_seed_6.jls",
+	"../data/data_100_540_seed_7.jls",
+	"../data/data_100_540_seed_8.jls",
+	"../data/data_100_540_seed_9.jls",
+	"../data/data_100_540_seed_10.jls",
+]
+
+# ╔═╡ 820a0c03-4bad-43f0-8494-b69403058faa
+betas_name = [
+	0.0f0,
+	0.1f0,
+	0.2f0,
+	0.3f0,
+	0.4f0,
+	0.5f0,
+	0.6f0,
+	0.7f0,
+	0.8f0,
+	0.9f0,
+	1.0f0,
+]
+
+# ╔═╡ 1ac80882-c7e6-4ecd-82fc-5ae91ffb5508
+function create_file_name(vec_name, beta)
+	new_beta = string(convert(Int, beta * 10))
+	seed = vec_name[end-4]
+	file_name = "../data/send_away/python_beta_" * new_beta * "_num_" * seed * "_data.h5"
+	return file_name
+end
+
+# ╔═╡ 2a463e23-8f74-4a93-a550-c69c5a098f4b
+for i in betas_name
+	for j in vec_name_all
+		file_name = create_file_name(j, i)
+		createInterpolateFiles(file_name, j, i)
+	end
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -643,14 +658,13 @@ version = "17.4.0+0"
 # ╔═╡ Cell order:
 # ╠═dd650878-ea12-11ed-26a3-8d1d59042949
 # ╠═b82cdc33-b5a9-4a1c-98e7-87cc87c1d673
-# ╠═528d96fc-59e1-4a9b-8efb-c59c10fbe4ac
 # ╠═d42b0967-4d7c-48a3-b7bb-4fbb3ff217eb
-# ╠═c400ab7a-5997-4623-8aa1-f3ac1fa56b2b
-# ╠═98b8e6ed-b547-4ab0-8b87-fbbbd64b863a
-# ╠═3a50fba3-0113-41d0-841a-c692a10a5028
 # ╠═3241100e-93a9-4884-b62a-b10a6abe8850
 # ╠═382d8b6e-2174-4edc-829b-6eae6d7addb5
 # ╠═6bdb06cf-ea57-4d45-b0a3-c156d0f2b7ed
-# ╠═3e0955db-8791-4129-a82a-524128040295
+# ╠═3677317b-d746-49d7-9347-a18e3e0dc4a6
+# ╠═820a0c03-4bad-43f0-8494-b69403058faa
+# ╠═1ac80882-c7e6-4ecd-82fc-5ae91ffb5508
+# ╠═2a463e23-8f74-4a93-a550-c69c5a098f4b
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

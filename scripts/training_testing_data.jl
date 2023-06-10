@@ -148,40 +148,16 @@ function generateTestingDataset(rng::AbstractRNG, output_file, vecs, time_len)
     end
 end
 
-# ╔═╡ ad118a60-6794-4230-8cd0-6cd3d0b52bf3
-begin
+# ╔═╡ c0294353-b7f8-4c3a-b160-956b28ceb141
+function generate_more_data(seed, name)
     rng = Random.default_rng()
-    Random.seed!(rng, 0)
+    Random.seed!(rng, seed)
 	vecs_100 = constructInputVecs(rng, 100)
-	generateTrainingDataset(rng, "../data/data_100_540.jls", vecs_100, 50)
-	generateTestingDataset(rng, "../data/data_100_27.jls", vecs_100, 50)
+	generateTrainingDataset(rng, name, vecs_100, 50)
 end
 
-# ╔═╡ eb1cf697-051e-4f4f-98b6-dd5ffdf26ef9
-begin
-	vecs_50 = constructInputVecs(rng, 50)
-	generateTrainingDataset(rng, "../data/data_50_540.jls", vecs_50, 50)
-	generateTestingDataset(rng, "../data/data_50_27.jls", vecs_50, 50)
-end
-
-# ╔═╡ 7cde92f9-8681-48e6-97e8-f83ea4333d64
-begin
-	generateTrainingDataset(rng, "../data/data_100_540_long.jls", vecs_100, 100)
-	generateTestingDataset(rng, "../data/data_100_27_long.jls", vecs_100, 100)
-end
-
-# ╔═╡ 1911b287-9edd-4e3c-aefa-92ca4df64f96
-begin
-		vecs_256 = constructInputVecs(rng, 256)
-		generateTrainingDataset(rng, "../data/data_256_540.jls", vecs_256, 50)
-		generateTestingDataset(rng, "../data/data_256_27.jls", vecs_256, 50)
-end
-
-# ╔═╡ 3a2ceccf-1d3e-424d-9c87-d89a44c79a48
-begin
-			generateTrainingDataset(rng, "../data/data_256_540_long.jls", vecs_256, 100)
-			generateTestingDataset(rng, "../data/data_256_27_long.jls", vecs_256, 100)
-end
+# ╔═╡ f3105dd3-cf60-4777-a4fa-77c3cb0d3fc5
+generate_more_data(10, "../data/data_100_540_seed_10.jls")
 
 # ╔═╡ b2b1890d-338e-429a-9f10-71b33e9c68cd
 md"## Test serialization"
@@ -929,11 +905,8 @@ version = "17.4.0+0"
 # ╠═36ca73ce-afde-460a-bc49-2a7386992e9a
 # ╟─b9a1ddc9-86e0-4e5b-8e6f-b623a3f1714e
 # ╠═aa80beed-a235-4074-ba84-ba4562075481
-# ╠═ad118a60-6794-4230-8cd0-6cd3d0b52bf3
-# ╠═eb1cf697-051e-4f4f-98b6-dd5ffdf26ef9
-# ╠═7cde92f9-8681-48e6-97e8-f83ea4333d64
-# ╠═1911b287-9edd-4e3c-aefa-92ca4df64f96
-# ╠═3a2ceccf-1d3e-424d-9c87-d89a44c79a48
+# ╠═c0294353-b7f8-4c3a-b160-956b28ceb141
+# ╠═f3105dd3-cf60-4777-a4fa-77c3cb0d3fc5
 # ╟─b2b1890d-338e-429a-9f10-71b33e9c68cd
 # ╠═02c6940e-0ac0-4942-8fe5-1dd836e5c594
 # ╠═a4b73010-f353-4437-aa2a-0ef1e7f50464
